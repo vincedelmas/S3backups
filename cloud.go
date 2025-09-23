@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"os/exec"
 )
 
@@ -24,7 +25,12 @@ func syncImagesToS3(site Site) {
 	}
 
 	destination := site.S3Remote + ":" + site.S3Bucket + "/" + site.S3ImagesPath
-	rcloneCmd := exec.Command("rclone", "sync", site.ImagesDir, destination, "--create-empty-src-dirs")
+	rcloneCmd := exec.Command("rclone", "sync", site.ImagesDir, destination,
+		"--create-empty-src-dirs", "--transfers=16", "--checkers=16", "--fast-list", "--size-only", "--progress")
+
+	// Pipe rclone output to main log
+	rcloneCmd.Stdout = os.Stdout
+	rcloneCmd.Stderr = os.Stderr
 
 	if err := rcloneCmd.Run(); err != nil {
 		log.Printf("Error syncing images to S3 for site %s: %v", site.Name, err)

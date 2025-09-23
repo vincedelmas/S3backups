@@ -19,7 +19,12 @@ func main() {
 
 	for _, site := range config.Sites {
 		log.Printf("Processing site: %s", site.Name)
-		backupDatabase(site, config.DBBackupsToKeep)
+		if site.DataFolderPath != "" {
+			backupDataFolder(site, config.DBBackupsToKeep)
+		} else if site.DBPath != "" {
+			backupDatabase(site, config.DBBackupsToKeep)
+		}
 		syncImagesToS3(site)
 	}
+
 }

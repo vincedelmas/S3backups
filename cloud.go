@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"os/exec"
 )
@@ -12,9 +12,9 @@ func syncDbBackupsToS3(backupDir string, site Site) {
 	rcloneCmd := exec.Command("rclone", "sync", backupDir, destination, "--create-empty-src-dirs")
 
 	if err := rcloneCmd.Run(); err != nil {
-		log.Printf("Error syncing db backups to S3 for site %s: %v", site.Name, err)
+		fmt.Printf("Error syncing db backups to S3 for site %s: %v", site.Name, err)
 	} else {
-		log.Printf("Successfully synced db backups to S3 for site %s", site.Name)
+		fmt.Printf("Successfully synced db backups to S3 for site %s", site.Name)
 	}
 }
 
@@ -26,15 +26,14 @@ func syncImagesToS3(site Site) {
 
 	destination := site.S3Remote + ":" + site.S3Bucket + "/" + site.S3ImagesPath
 	rcloneCmd := exec.Command("rclone", "sync", site.ImagesDir, destination,
-		"--create-empty-src-dirs", "--transfers=16", "--checkers=16", "--fast-list", "--size-only", "--progress")
+		"--create-empty-src-dirs", "--transfers=16", "--checkers=16", "--fast-list", "--size-only", "--stats", "--stats-one-line")
 
-	// Pipe rclone output to main log
 	rcloneCmd.Stdout = os.Stdout
 	rcloneCmd.Stderr = os.Stderr
 
 	if err := rcloneCmd.Run(); err != nil {
-		log.Printf("Error syncing images to S3 for site %s: %v", site.Name, err)
+		fmt.Printf("Error syncing images to S3 for site %s: %v", site.Name, err)
 	} else {
-		log.Printf("Successfully synced images to S3 for site %s", site.Name)
+		fmt.Printf("Successfully synced images to S3 for site %s", site.Name)
 	}
 }

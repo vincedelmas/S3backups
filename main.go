@@ -2,23 +2,23 @@ package main
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"os"
 )
 
 func main() {
 	configFile, err := os.ReadFile("config.json")
 	if err != nil {
-		log.Fatalf("Error reading config file: %v", err)
+		fmt.Printf("Error reading config file: %v", err)
 	}
 
 	var config Config
 	if err := json.Unmarshal(configFile, &config); err != nil {
-		log.Fatalf("Error unmarshalling config file: %v", err)
+		fmt.Printf("Error unmarshalling config file: %v", err)
 	}
 
 	for _, site := range config.Sites {
-		log.Printf("Processing site: %s", site.Name)
+		fmt.Printf("Processing site: %s", site.Name)
 		if site.DataFolderPath != "" {
 			backupDataFolder(site, config.DBBackupsToKeep)
 		} else if site.DBPath != "" {

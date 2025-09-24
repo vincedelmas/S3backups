@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,21 +17,21 @@ import (
 func backupDatabase(site Site, toKeep int) {
 	db, err := sql.Open("sqlite3", site.DBPath)
 	if err != nil {
-		log.Printf("Error opening db for site %s: %v", site.Name, err)
+		fmt.Printf("Error opening db for site %s: %v", site.Name, err)
 		return
 	}
 	defer db.Close()
 
 	// WAL checkpoint for consistent backup
 	if _, err := db.Exec("PRAGMA wal_checkpoint(FULL);"); err != nil {
-		log.Printf("Error performing WAL checkpoint for site %s: %v", site.Name, err)
+		fmt.Printf("Error performing WAL checkpoint for site %s: %v", site.Name, err)
 		return
 	}
 
 	// Create backup dir one level up from live DB dir
 	backupDir := filepath.Join(filepath.Dir(filepath.Dir(site.DBPath)), "dbBackups")
 	if err := os.MkdirAll(backupDir, 0755); err != nil {
-		log.Printf("Error creating backup directory for site %s: %v", site.Name, err)
+		fmt.Printf("Error creating backup directory for site %s: %v", site.Name, err)
 		return
 	}
 
@@ -42,11 +41,11 @@ func backupDatabase(site Site, toKeep int) {
 	// Create copy of db file
 	cmd := exec.Command("cp", site.DBPath, backupPath)
 	if err := cmd.Run(); err != nil {
-		log.Printf("Error creating db backup for site %s: %v", site.Name, err)
+		fmt.Printf("Error creating db backup for site %s: %v", site.Name, err)
 		return
 	}
 
-	log.Printf("Successfully created db backup for site %s at %s", site.Name, backupPath)
+	fmt.Printf("Successfully created db backup for site %s at %s", site.Name, backupPath)
 
 	cleanupOldBackups(backupDir, filepath.Base(site.DBPath), toKeep)
 	syncDbBackupsToS3(backupDir, site)
@@ -56,7 +55,7 @@ func backupDatabase(site Site, toKeep int) {
 func cleanupOldBackups(backupDir string, dbName string, toKeep int) {
 	files, err := os.ReadDir(backupDir)
 	if err != nil {
-		log.Printf("Error reading backup directory for db %s: %v", dbName, err)
+		fmt.Printf("Error reading backup directory for db %s: %v", dbName, err)
 		return
 	}
 
@@ -79,9 +78,9 @@ func cleanupOldBackups(backupDir string, dbName string, toKeep int) {
 			filePath := filepath.Join(backupDir, backupFiles[i].Name())
 
 			if err := os.Remove(filePath); err != nil {
-				log.Printf("Error deleting old backup file %s: %v", filePath, err)
+				fmt.Printf("Error deleting old backup file %s: %v", filePath, err)
 			} else {
-				log.Printf("Deleted old backup file %s", filePath)
+				fmt.Printf("Deleted old backup file %s", filePath)
 			}
 		}
 	}

@@ -12,9 +12,9 @@ func syncDbBackupsToS3(backupDir string, site Site) {
 	rcloneCmd := exec.Command("rclone", "sync", backupDir, destination, "--create-empty-src-dirs")
 
 	if err := rcloneCmd.Run(); err != nil {
-		fmt.Println("Error syncing db backups to S3 for site %s: %v", site.Name, err)
+		fmt.Println("Error syncing db backups to S3 for site", site.Name, ":", err)
 	} else {
-		fmt.Println("Successfully synced db backups to S3 for site %s", site.Name)
+		fmt.Println("Successfully synced db backups to S3 for site", site.Name)
 	}
 }
 
@@ -32,8 +32,8 @@ func syncImagesToS3(site Site) {
 	rcloneCmd.Stderr = os.Stderr
 
 	if err := rcloneCmd.Run(); err != nil {
-		fmt.Println("Error syncing images to S3 for site %s: %v", site.Name, err)
+		fmt.Println("Error syncing images to S3 for site", site.Name, ":", err)
 	} else {
-		fmt.Println("Successfully synced images to S3 for site %s", site.Name)
+		fmt.Println("Successfully synced images to S3 for site", site.Name)
 	}
 }

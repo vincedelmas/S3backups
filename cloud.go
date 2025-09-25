@@ -26,7 +26,7 @@ func syncImagesToS3(site Site) {
 
 	destination := site.S3Remote + ":" + site.S3Bucket + "/" + site.S3ImagesPath
 	rcloneCmd := exec.Command("rclone", "sync", site.ImagesDir, destination,
-		"--create-empty-src-dirs", "--transfers=16", "--checkers=16", "--fast-list", "--size-only", "--stats")
+		"--create-empty-src-dirs", "--transfers=16", "--checkers=16", "--fast-list", "--size-only", "--stats 1m")
 
 	rcloneCmd.Stdout = os.Stdout
 	rcloneCmd.Stderr = os.Stderr

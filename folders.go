@@ -18,7 +18,7 @@ func backupDataFolder(site Site, toKeep int) {
 	// Create backup dir one level up from data folder
 	backupDir := filepath.Join(filepath.Dir(site.DataFolderPath), "folderBackups")
 	if err := os.MkdirAll(backupDir, 0755); err != nil {
-		fmt.Printf("Error creating backup directory for site %s: %v", site.Name, err)
+		fmt.Println("Error creating backup directory for site %s: %v", site.Name, err)
 		return
 	}
 
@@ -28,11 +28,11 @@ func backupDataFolder(site Site, toKeep int) {
 	// Create tar.gz archive. Use -C to change dir during archiving so archive doesn't contain full path
 	cmd := exec.Command("tar", "-czf", backupPath, "-C", site.DataFolderPath, ".")
 	if output, err := cmd.CombinedOutput(); err != nil {
-		fmt.Printf("Error creating folder backup for site %s: %v\nOutput: %s", site.Name, err, string(output))
+		fmt.Println("Error creating folder backup for site %s: %v\nOutput: %s", site.Name, err, string(output))
 		return
 	}
 
-	fmt.Printf("Successfully created folder backup for site %s at %s", site.Name, backupPath)
+	fmt.Println("Successfully created folder backup for site %s at %s", site.Name, backupPath)
 
 	cleanupOldFolderBackups(backupDir, filepath.Base(site.DataFolderPath), toKeep)
 	syncDbBackupsToS3(backupDir, site)
@@ -42,7 +42,7 @@ func backupDataFolder(site Site, toKeep int) {
 func cleanupOldFolderBackups(backupDir string, folderName string, toKeep int) {
 	files, err := os.ReadDir(backupDir)
 	if err != nil {
-		fmt.Printf("Error reading backup directory for folder %s: %v", folderName, err)
+		fmt.Println("Error reading backup directory for folder %s: %v", folderName, err)
 		return
 	}
 
@@ -64,9 +64,9 @@ func cleanupOldFolderBackups(backupDir string, folderName string, toKeep int) {
 		for i := 0; i < len(backupFiles)-toKeep; i++ {
 			filePath := filepath.Join(backupDir, backupFiles[i].Name())
 			if err := os.Remove(filePath); err != nil {
-				fmt.Printf("Error deleting old backup file %s: %v", filePath, err)
+				fmt.Println("Error deleting old backup file %s: %v", filePath, err)
 			} else {
-				fmt.Printf("Deleted old backup file %s", filePath)
+				fmt.Println("Deleted old backup file %s", filePath)
 			}
 		}
 	}

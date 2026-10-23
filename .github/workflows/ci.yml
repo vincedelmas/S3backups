@@ -22,9 +22,3 @@ jobs:
           cache-dependency-path: go.sum
       - run: go test ./...
       - run: go vet ./...
-      - name: Build Linux binary
-        env:
-          CGO_ENABLED: '0'
-          GOOS: linux
-          GOARCH: amd64
-        run: go build -trimpath -o "$RUNNER_TEMP/s3-backups" .

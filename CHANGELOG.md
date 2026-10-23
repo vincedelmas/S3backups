@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/vincedelmas/S3backups/compare/v0.2.0...v0.3.0) (2026-10-23)
+
+
+### Features
+
+* add site selection by name for backups ([dcf2ce0](https://github.com/vincedelmas/S3backups/commit/dcf2ce0968f3afb192e3e0482e5eefc46e83ae32))
+
 ## [0.2.0](https://github.com/vincedelmas/S3backups/compare/v0.1.0...v0.2.0) (2026-10-23)
 
 

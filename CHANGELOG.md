@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/vincedelmas/S3backups/compare/v0.3.0...v0.3.1) (2026-10-23)
+
+
+### Bug Fixes
+
+* use SQLite native backup API for consistent snapshots ([c898100](https://github.com/vincedelmas/S3backups/commit/c89810051518b98f80ddfb4d957bfecba679c555))
+
 ## [0.3.0](https://github.com/vincedelmas/S3backups/compare/v0.2.0...v0.3.0) (2026-10-23)
 
 

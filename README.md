@@ -44,3 +44,12 @@ Run from the folder that holds `config.json`:
 ```sh
 ./s3-backups
 ```
+
+To back up only one site, select its exact `name` from `config.json`:
+
+```sh
+./s3-backups --site my-site
+```
+
+This runs the site's backup and image sync. Without `--site`, all sites run.
+An unknown or duplicate name stops the run before any backups start.

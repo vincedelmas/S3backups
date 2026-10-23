@@ -15,8 +15,11 @@ import (
 
 // backupDataFolder backup of whole data folder for given site
 func backupDataFolder(site Site, toKeep int) {
-	// Create backup dir one level up from data folder
-	backupDir := filepath.Join(filepath.Dir(site.DataFolderPath), "folderBackups")
+	// Use the configured directory, or create folderBackups beside the data folder.
+	backupDir := site.FolderBackupsPath
+	if backupDir == "" {
+		backupDir = filepath.Join(filepath.Dir(site.DataFolderPath), "folderBackups")
+	}
 	if err := os.MkdirAll(backupDir, 0755); err != nil {
 		fmt.Println("Error creating backup directory for site", site.Name, ":", err)
 		return

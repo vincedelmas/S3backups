@@ -8,12 +8,13 @@ type Config struct {
 
 // Site represents a site config
 type Site struct {
-	Name           string `json:"name"`
-	DBPath         string `json:"db_path,omitempty"`
-	DataFolderPath string `json:"data_folder_path,omitempty"`
-	ImagesDir      string `json:"images_dir"`
-	S3Remote       string `json:"s3_remote"`
-	S3Bucket       string `json:"s3_bucket"`
-	S3DBPath       string `json:"s3_db_path"`
-	S3ImagesPath   string `json:"s3_images_path"`
+	Name              string `json:"name"`
+	DBPath            string `json:"db_path,omitempty"`
+	DataFolderPath    string `json:"data_folder_path,omitempty"`
+	FolderBackupsPath string `json:"folder_backups_path,omitempty"`
+	ImagesDir         string `json:"images_dir"`
+	S3Remote          string `json:"s3_remote"`
+	S3Bucket          string `json:"s3_bucket"`
+	S3DBPath          string `json:"s3_db_path"`
+	S3ImagesPath      string `json:"s3_images_path"`
 }

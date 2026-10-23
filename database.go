@@ -1,33 +1,18 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"time"
 
-	_ "github.com/ncruces/go-sqlite3/driver"
+	"github.com/ncruces/go-sqlite3"
 	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // backupDatabase performs a backup of SQLite db for given site
 func backupDatabase(site Site, toKeep int) {
-	db, err := sql.Open("sqlite3", site.DBPath)
-	if err != nil {
-		fmt.Println("Error opening db for site", site.Name, ":", err)
-		return
-	}
-	defer db.Close()
-
-	// WAL checkpoint for consistent backup
-	if _, err := db.Exec("PRAGMA wal_checkpoint(FULL);"); err != nil {
-		fmt.Println("Error performing WAL checkpoint for site", site.Name, ":", err)
-		return
-	}
-
 	// Create backup dir one level up from live DB dir
 	backupDir := filepath.Join(filepath.Dir(filepath.Dir(site.DBPath)), "dbBackups")
 	if err := os.MkdirAll(backupDir, 0755); err != nil {
@@ -38,9 +23,7 @@ func backupDatabase(site Site, toKeep int) {
 	backupFileName := fmt.Sprintf("%s-%s.db", filepath.Base(site.DBPath), time.Now().Format("2006-01-02-15-04-05"))
 	backupPath := filepath.Join(backupDir, backupFileName)
 
-	// Create copy of db file
-	cmd := exec.Command("cp", site.DBPath, backupPath)
-	if err := cmd.Run(); err != nil {
+	if err := createDatabaseBackup(site.DBPath, backupPath); err != nil {
 		fmt.Println("Error creating db backup for site", site.Name, ":", err)
 		return
 	}
@@ -49,6 +32,48 @@ func backupDatabase(site Site, toKeep int) {
 
 	cleanupOldBackups(backupDir, filepath.Base(site.DBPath), toKeep)
 	syncDbBackupsToS3(backupDir, site)
+}
+
+// createDatabaseBackup publishes a complete SQLite snapshot, including committed WAL data.
+func createDatabaseBackup(dbPath, backupPath string) error {
+	// Never create an empty source database when the configured path is wrong.
+	db, err := sqlite3.OpenFlags(dbPath, sqlite3.OPEN_READONLY|sqlite3.OPEN_URI)
+	if err != nil {
+		return fmt.Errorf("open source database: %w", err)
+	}
+	defer db.Close()
+	if err := db.BusyTimeout(5 * time.Second); err != nil {
+		return fmt.Errorf("set database busy timeout: %w", err)
+	}
+
+	// Keep incomplete backups out of retention and S3 sync, and preserve any
+	// existing backup at backupPath if this attempt fails.
+	tmp, err := os.CreateTemp(filepath.Dir(backupPath), ".sqlite-backup-*.tmp")
+	if err != nil {
+		return fmt.Errorf("create temporary backup: %w", err)
+	}
+	tmpPath := tmp.Name()
+	defer os.Remove(tmpPath)
+	if err := tmp.Close(); err != nil {
+		return fmt.Errorf("close temporary backup file: %w", err)
+	}
+
+	backup, err := db.BackupInit("main", tmpPath)
+	if err != nil {
+		return fmt.Errorf("initialize SQLite backup: %w", err)
+	}
+	_, stepErr := backup.Step(-1)
+	closeErr := backup.Close()
+	if stepErr != nil {
+		return fmt.Errorf("copy SQLite backup: %w", stepErr)
+	}
+	if closeErr != nil {
+		return fmt.Errorf("finish SQLite backup: %w", closeErr)
+	}
+	if err := os.Rename(tmpPath, backupPath); err != nil {
+		return fmt.Errorf("publish SQLite backup: %w", err)
+	}
+	return nil
 }
 
 // cleanupOldBackups removes old backups, keep only top N most recent

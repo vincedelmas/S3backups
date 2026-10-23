@@ -29,6 +29,8 @@ Change the paths and S3 names to match your setup.
 - `db_backups_to_keep`: how many local backups to keep.
 - `data_folder_path`: local folder to back up as a `.tar.gz` file.
 - `db_path`: local SQLite file to back up instead. Leave out `data_folder_path` to use it.
+  SQLite backups use the native online backup API to include committed WAL data
+  without forcing a checkpoint on the live database.
 - `folder_backups_path`: where to save folder backups. Keep it outside the data folder.
   If left out, the app uses `folderBackups` next to the data folder.
 - `images_dir`: local image folder to sync. Leave out to skip images.
